@@ -1,0 +1,14 @@
+{
+  "name": "sourcenote",
+  "version": "1.0.0",
+  "description": "An offline daily planner with sticky notes, checklists, and scheduled tasks for Windows.",
+  "repository": "github:AliNajafpour/SourceNote",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node test.mjs",
+    "build:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File desktop/build.ps1",
+    "test:windows": "powershell -NoProfile -ExecutionPolicy Bypass -File desktop/verify.ps1"
+  }
+}

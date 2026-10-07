@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fa">
+  <meta name="description" content="A personal daily board for notes, thoughts, and plans.">
+  <title>SourceNote</title>
+  <script>
+    let preferredTheme;
+    try { preferredTheme = localStorage.getItem('sourcenote.theme'); } catch {}
+    document.documentElement.dataset.theme = ['light', 'dark'].includes(preferredTheme) ? preferredTheme : matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  </script>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.mjs"></script>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="Calendar">
+      <a class="brand" href="/" aria-label="SourceNote home"><img src="/favicon.svg" alt="" width="34" height="34"><span>SourceNote<span class="brand-dot">.</span></span></a>
+      <div class="month-bar">
+        <div><h2 id="month-name"></h2><span id="month-year"></span></div>
+        <div class="month-controls"><button id="prev-month" class="icon-button" aria-label="Previous month" data-icon="left"></button><button id="next-month" class="icon-button" aria-label="Next month" data-icon="right"></button></div>
+      </div>
+      <nav id="days" class="days" aria-label="Choose a day"></nav>
+      <div class="sidebar-bottom"><span class="local-dot"></span><span>On this device</span></div>
+    </aside>
+    <main>
+      <header class="topbar">
+        <div class="breadcrumb"><span data-icon="board"></span><span>SourceNote</span><span class="breadcrumb-slash">/</span><strong>Daily board</strong></div>
+        <div class="top-actions">
+          <label class="search"><span data-icon="search"></span><input id="search" type="search" placeholder="Search notes" aria-label="Search this day's notes"></label>
+          <button id="theme-toggle" class="icon-button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false" data-icon="moon"></button>
+          <button id="export" class="icon-button" aria-label="Export notes" title="Export notes" data-icon="download"></button>
+          <button id="import" class="icon-button" aria-label="Import notes" title="Import notes" data-icon="upload" hidden></button>
+          <button id="today" class="button today-button"><span data-icon="calendar"></span>Today</button>
+          <div class="create-button day-create" role="group" aria-label="Day notes">
+            <button id="add-day-note" class="button"><span data-icon="plus"></span><span>Today note</span></button>
+            <button id="add-day-checklist" class="button checklist-create" aria-label="Add day checklist" title="Add day checklist" data-icon="checklist"></button>
+          </div>
+          <div class="create-button general-create" role="group" aria-label="General notes">
+            <button id="add-note" class="button primary" title="Add a general note for all days"><span data-icon="plus"></span><span>New note</span></button>
+            <button id="add-general-checklist" class="button primary checklist-create" aria-label="Add general checklist" title="Add general checklist" data-icon="checklist"></button>
+          </div>
+        </div>
+      </header>
+      <section class="workspace" aria-label="Daily note board">
+        <div class="board-heading"><div><div class="weekday-line"><span id="weekday"></span><span id="today-badge" class="today-badge">Today</span></div><h1 id="date-heading"></h1></div><div class="board-tools"><span id="note-count"></span><div class="view-switch" role="group" aria-label="Board layout"><button id="board-view" class="icon-button active" aria-label="Board view" aria-pressed="true" data-icon="grid"></button><button id="list-view" class="icon-button" aria-label="List view" aria-pressed="false" data-icon="list"></button></div></div></div>
+        <div id="board" class="board"></div>
+        <div id="empty-search" class="empty-search" hidden>No matching notes</div>
+        <footer class="board-footer"><span id="save-status" role="status"><span data-icon="check"></span>All changes saved</span><span class="shortcut-hint"><kbd>Alt</kbd> + <kbd>N</kbd> new note</span></footer>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" hidden><span id="toast-message"></span><button id="undo">Undo</button><button id="dismiss-toast" class="icon-button" aria-label="Dismiss" data-icon="close"></button></div>
+</body>
+</html>
