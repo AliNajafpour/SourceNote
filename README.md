@@ -117,3 +117,15 @@ GitHub Actions runs the model checks and builds the Windows ZIP on pushes and pu
 | Browser server reports the port is in use | Close the previous SourceNote server before running `npm start` again. |
 
 Include your Windows version and the error message when [reporting a problem](https://github.com/AliNajafpour/SourceNote/issues).
+
+## Support SourceNote
+
+If SourceNote is useful to you, you can support it by starring the repository, sharing feedback, or contributing a pull request. Donations are optional and help me make more time to work on the app.
+
+| Network | Donation address |
+| --- | --- |
+| Ethereum / Base / BNB Smart Chain / Polygon | `0xCFFF5F707B813d5fbb02e7B7b3875F31d9a469D4` |
+| Bitcoin | `bc1qzarssuy205ttvq5y843aptzdysh3avtf9lvuf7` |
+| Solana | `EyS5yUFB5C39pwneuTMXyD36QnEDiTAt1rdor54jBf7F` |
+
+Choose the matching network when sending a donation.
