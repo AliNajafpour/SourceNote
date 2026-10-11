@@ -124,8 +124,8 @@ If SourceNote is useful to you, you can support it by starring the repository, s
 
 | Network | Donation address |
 | --- | --- |
-| Ethereum / Base / BNB Smart Chain / Polygon | `0xCFFF5F707B813d5fbb02e7B7b3875F31d9a469D4` |
-| Bitcoin | `bc1qzarssuy205ttvq5y843aptzdysh3avtf9lvuf7` |
-| Solana | `EyS5yUFB5C39pwneuTMXyD36QnEDiTAt1rdor54jBf7F` |
+| Ethereum / Base / BNB Smart Chain / Polygon | `0x68096867CBa03B7ce9C76480FE556bC80C1b855D` |
+| Bitcoin | `bc1qu7htee5vpyqalvwkk38nelwxrx8j9jfukuefqv` |
+| Solana | `3MBgXWQUY39JYHNByr9A8sswvd12Pzn8tYxtHb9MiiF8` |
 
 Choose the matching network when sending a donation.
