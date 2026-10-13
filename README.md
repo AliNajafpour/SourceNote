@@ -9,19 +9,29 @@ A personal daily planner with sticky notes, checklists, and tasks assigned to da
 ## Install on Windows
 
 1. Open the [latest release](https://github.com/AliNajafpour/SourceNote/releases/latest).
-2. Under **Assets**, download **SourceNote-Windows.zip**.
-3. Right-click the ZIP and choose **Extract All**.
-4. Open the extracted folder and double-click **SourceNote.exe**.
+2. Under **Assets**, download **SourceNote-Setup.exe**.
+3. Close any running SourceNote window, then run the setup file.
+4. Open **SourceNote** from the Start menu. A desktop shortcut is optional during setup.
 
-Keep the `app` folder and DLL files beside `SourceNote.exe`. You can create a desktop shortcut to the executable. No installer, account, Node.js, or web server is needed to run the Windows app.
+Setup installs for your Windows account under `%LOCALAPPDATA%\Programs\SourceNote`, normally `C:\Users\<you>\AppData\Local\Programs\SourceNote`. It creates the Start menu shortcut with the app icon and an entry in Windows **Installed apps**. No administrator password, account, Node.js, or web server is needed.
 
-Requires **64-bit Windows 10 or 11**, [.NET Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48), and [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). If WebView2 is missing, install the **Evergreen Standalone Installer for x64**, then reopen SourceNote.
+Requires **64-bit Windows 10 or 11**, [.NET Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48), and [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/). Setup checks for these prerequisites before installing. If WebView2 is missing, install Microsoft's **x64 Evergreen Runtime** and run setup again. The installer and note board work offline when these prerequisites are present.
 
-The executable is unsigned, so Windows may display a publisher warning. Release downloads include `SHA256SUMS.txt`; you can check a downloaded ZIP in PowerShell with `Get-FileHash .\SourceNote-Windows.zip -Algorithm SHA256`.
+The app and setup file are unsigned, so Windows may display a publisher warning. Release downloads include `SHA256SUMS.txt`; check a setup download in PowerShell with `Get-FileHash .\SourceNote-Setup.exe -Algorithm SHA256`.
 
 ### Update
 
-Close SourceNote, download the latest ZIP, and extract it into a new folder. Launch the new `SourceNote.exe` and update your shortcut. Your notes are stored separately from the app and remain available after updating. Export a backup before updating.
+SourceNote checks GitHub for a newer stable release when it opens and every six hours while running. A small notification appears when a newer Windows installer is available. Click **Get update** to open the release page, download **SourceNote-Setup.exe**, close SourceNote, and run setup. It upgrades the same folder and preserves your notes and backups. Updates are installed only when you choose to run setup.
+
+The refresh button at the bottom of the calendar checks manually; the adjacent label shows the installed version. Offline checks fail quietly and do not affect your notes. Checking updates sends a request to GitHub for public release metadata; it does not send your notes.
+
+Before updating, export a backup. To move from the old portable release, close it and run setup. Your existing Windows notes are picked up automatically because the data folder stays the same. Replace any old pinned `SourceNote.exe` entry with the installed **SourceNote** shortcut once.
+
+### Uninstall or use the portable version
+
+Uninstall through Windows **Settings → Apps → Installed apps → SourceNote**. Uninstall removes the program and its installer-created shortcuts; it retains notes and backups in `%LOCALAPPDATA%\SourceNote`.
+
+For a portable copy, download **SourceNote-Windows.zip**, extract the entire ZIP, and open **SourceNote.exe**. Keep the `app` folder and DLLs beside it. Update a portable copy by extracting a newer ZIP into a new folder. Close the previous copy before opening the new one. Windows portable and installed copies share the same notes folder.
 
 ## How to use
 
@@ -100,11 +110,15 @@ On 64-bit Windows with .NET Framework 4.8 and Node.js 22 or newer:
 ```sh
 npm run build:windows
 npm run test:windows
+npm run build:installer
+npm run test:installer
 ```
 
-The first build downloads Microsoft's pinned WebView2 SDK from NuGet. Output is `dist/SourceNote/SourceNote.exe` and `dist/SourceNote-Windows.zip`. The native test requires the WebView2 Runtime, launches a temporary app window, and uses an isolated test profile. It checks startup, scheduling, completion sync, storage, backup import, and theme persistence.
+The first desktop build downloads Microsoft's pinned WebView2 SDK from NuGet. Output is `dist/SourceNote/SourceNote.exe` and `dist/SourceNote-Windows.zip`. The native test requires the WebView2 Runtime and uses an isolated profile. It checks scheduling, storage, backups, themes, release validation, and update notifications.
 
-GitHub Actions runs the model checks and builds the Windows ZIP on pushes and pull requests. Pushing a `v*` tag also publishes the ZIP and its SHA-256 checksum as a GitHub release. The native UI check runs locally; CI builds do not run it.
+The installer build downloads the checksum-verified Inno Setup 6.7.3 compiler into `desktop/vendor/inno`. Output is `dist/SourceNote-Setup.exe`. Installer verification uses a unique test app registration and folder; it checks installation, upgrading, shortcuts, downgrade prevention, and uninstall behavior without using your notes profile.
+
+GitHub Actions runs model and installer checks and builds both Windows downloads on pushes and pull requests. To ship a release, update `package.json` and the changelog, then push a matching tag such as `v1.1.0`. CI rejects tags that differ from the package version and publishes the setup file, portable ZIP, and SHA-256 checksums. Existing installations detect the new release during their next update check. The native UI check runs locally.
 
 ## Troubleshooting
 

@@ -12,6 +12,7 @@ const paths = {
   note: '<path d="M5 3h14v13l-5 5H5zM14 21v-5h5M9 8h6M9 12h4"/>',
   checklist: '<path d="m3 6 2 2 3-4M11 6h10m-18 8 2 2 3-4M11 14h10M11 20h10"/>',
   minimize: '<path d="M6 12h12"/>',
+  refresh: '<path d="M20 7v5h-5M4 17v-5h5M6 7a7 7 0 0 1 12-1l2 6M4 12l2 6a7 7 0 0 0 12-1"/>',
   moon: '<path d="M20.5 13A8.5 8.5 0 0 1 11 3.5 8.5 8.5 0 1 0 20.5 13z"/>',
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"/>',
   more: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
@@ -444,7 +445,20 @@ if (window.chrome?.webview) {
   const desktop = window.chrome.webview;
   $('#import').hidden = false;
   $('#import').onclick = () => desktop.postMessage('import');
+  $('#check-updates').hidden = false;
+  $('#check-updates').onclick = () => desktop.postMessage('check-updates');
+  $('#get-update').onclick = () => desktop.postMessage('open-update');
+  $('#dismiss-update').onclick = () => { $('#update-notice').hidden = true; };
   desktop.addEventListener('message', event => {
+    if (event.data?.type === 'desktop-info') {
+      $('#app-version').textContent = `v${event.data.version}`;
+      return;
+    }
+    if (event.data?.type === 'update') {
+      $('#update-message').textContent = `SourceNote ${event.data.version} is available`;
+      $('#update-notice').hidden = false;
+      return;
+    }
     try {
       const imported = parseNotes(event.data);
       localStorage.setItem(key, JSON.stringify({ version: 1, notes: imported }));
@@ -453,4 +467,5 @@ if (window.chrome?.webview) {
       desktop.postMessage('imported');
     } catch { desktop.postMessage('import-error'); }
   });
+  desktop.postMessage('ready');
 }

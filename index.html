@@ -24,7 +24,7 @@
         <div class="month-controls"><button id="prev-month" class="icon-button" aria-label="Previous month" data-icon="left"></button><button id="next-month" class="icon-button" aria-label="Next month" data-icon="right"></button></div>
       </div>
       <nav id="days" class="days" aria-label="Choose a day"></nav>
-      <div class="sidebar-bottom"><span class="local-dot"></span><span>On this device</span></div>
+      <div class="sidebar-bottom"><span class="local-dot"></span><span id="app-version">On this device</span><button id="check-updates" class="icon-button" aria-label="Check for updates" title="Check for updates" data-icon="refresh" hidden></button></div>
     </aside>
     <main>
       <header class="topbar">
@@ -45,6 +45,7 @@
           </div>
         </div>
       </header>
+      <div id="update-notice" class="update-notice" role="status" hidden><span id="update-message"></span><button id="get-update" class="button">Get update</button><button id="dismiss-update" class="icon-button" aria-label="Dismiss update notification" data-icon="close"></button></div>
       <section class="workspace" aria-label="Daily note board">
         <div class="board-heading"><div><div class="weekday-line"><span id="weekday"></span><span id="today-badge" class="today-badge">Today</span></div><h1 id="date-heading"></h1></div><div class="board-tools"><span id="note-count"></span><div class="view-switch" role="group" aria-label="Board layout"><button id="board-view" class="icon-button active" aria-label="Board view" aria-pressed="true" data-icon="grid"></button><button id="list-view" class="icon-button" aria-label="List view" aria-pressed="false" data-icon="list"></button></div></div></div>
         <div id="board" class="board"></div>

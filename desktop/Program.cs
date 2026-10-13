@@ -3,6 +3,10 @@ using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
+using System.Reflection;
 using System.Web.Script.Serialization;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
@@ -25,6 +29,9 @@ internal sealed class NoteWindow : Form
     internal readonly TaskCompletionSource<bool> Ready = new TaskCompletionSource<bool>();
     private readonly string profile;
     private const string Origin = "https://app.sourcenote.local/";
+    private readonly Timer updateTimer = new Timer { Interval = 6 * 60 * 60 * 1000 };
+    private bool checkingUpdates;
+    private Version notifiedVersion;
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(IntPtr window, int attribute, ref int value, int size);
 
@@ -38,6 +45,8 @@ internal sealed class NoteWindow : Form
         BackColor = Color.FromArgb(247, 248, 250);
         Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
         profile = dataFolder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SourceNote", "WebView2");
+        updateTimer.Tick += async (sender, args) => await CheckForUpdates(false);
+        FormClosed += (sender, args) => updateTimer.Dispose();
         View.Dock = DockStyle.Fill;
         Controls.Add(View);
         Shown += async (sender, args) => await Initialize();
@@ -63,6 +72,22 @@ internal sealed class NoteWindow : Form
                 if (!args.Source.StartsWith(Origin, StringComparison.Ordinal)) return;
                 string message = args.TryGetWebMessageAsString();
                 if (message == "import") await ChooseBackup();
+                else if (message == "ready")
+                {
+                    var version = Assembly.GetExecutingAssembly().GetName().Version;
+                    core.PostWebMessageAsJson(new JavaScriptSerializer().Serialize(new { type = "desktop-info", version = version.ToString(3) }));
+                    if (profile == Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SourceNote", "WebView2"))
+                    {
+                        updateTimer.Start();
+                        await CheckForUpdates(false);
+                    }
+                }
+                else if (message == "check-updates") await CheckForUpdates(true);
+                else if (message == "open-update")
+                {
+                    try { Process.Start(new ProcessStartInfo(Updates.Releases + "/latest") { UseShellExecute = true }); }
+                    catch { MessageBox.Show(this, "Open " + Updates.Releases + "/latest in your browser to download the update.", "SourceNote", MessageBoxButtons.OK, MessageBoxIcon.Information); }
+                }
                 else if (message == "theme:dark" || message == "theme:light")
                 {
                     int dark = message == "theme:dark" ? 1 : 0;
@@ -85,6 +110,34 @@ internal sealed class NoteWindow : Form
             MessageBox.Show(this, "SourceNote could not start. Make sure Microsoft Edge WebView2 Runtime is installed.\n\n" + error.Message, "SourceNote", MessageBoxButtons.OK, MessageBoxIcon.Error);
             Close();
         }
+    }
+
+    private async Task CheckForUpdates(bool manual)
+    {
+        if (checkingUpdates) return;
+        checkingUpdates = true;
+        try
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+            using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15), MaxResponseContentBufferSize = 1024 * 1024 })
+            {
+                var current = Assembly.GetExecutingAssembly().GetName().Version;
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("SourceNote/" + current.ToString(3));
+                var latest = Updates.NewerVersion(await client.GetStringAsync(Updates.Api), current);
+                if (IsDisposed) return;
+                if (latest != null && (manual || latest != notifiedVersion))
+                {
+                    View.CoreWebView2.PostWebMessageAsJson(new JavaScriptSerializer().Serialize(new { type = "update", version = latest.ToString(3) }));
+                    notifiedVersion = latest;
+                }
+                else if (manual && latest == null) MessageBox.Show(this, "You're using the latest available version of SourceNote.", "SourceNote " + current.ToString(3), MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        catch
+        {
+            if (manual && !IsDisposed) MessageBox.Show(this, "Updates could not be checked. Check your internet connection and try again.", "SourceNote", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        finally { checkingUpdates = false; }
     }
 
     private void SaveDownload(object sender, CoreWebView2DownloadStartingEventArgs args)

@@ -21,16 +21,27 @@ jobs:
           node-version: '22'
       - run: npm test
       - run: npm run build:windows
+      - run: npm run build:installer
+      - run: npm run test:installer
+      - name: Verify release tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          if ($env:GITHUB_REF_NAME -ne "v$version") { throw 'Release tag does not match the app version.' }
       - name: Calculate release checksum
         shell: pwsh
         run: |
-          $hash = (Get-FileHash dist/SourceNote-Windows.zip -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  SourceNote-Windows.zip" | Set-Content dist/SHA256SUMS.txt -Encoding ascii
+          Get-Item dist/SourceNote-Windows.zip,dist/SourceNote-Setup.exe | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            "$hash  $($_.Name)"
+          } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
       - uses: actions/upload-artifact@v7
         with:
           name: SourceNote-Windows
           path: |
             dist/SourceNote-Windows.zip
+            dist/SourceNote-Setup.exe
             dist/SHA256SUMS.txt
           if-no-files-found: error
 
@@ -53,6 +64,7 @@ jobs:
         run: >-
           gh release create "$RELEASE_TAG"
           release/SourceNote-Windows.zip release/SHA256SUMS.txt
+          release/SourceNote-Setup.exe
           --verify-tag --title "SourceNote $RELEASE_TAG"
-          --notes "Download SourceNote-Windows.zip, extract the entire archive, and open SourceNote.exe. See the repository README for requirements, usage, and backup instructions."
+          --notes "Download and run SourceNote-Setup.exe to install or update SourceNote. Notes are preserved across upgrades. SourceNote-Windows.zip is the portable option. See the README for installation, update notifications, and backups."
           --generate-notes

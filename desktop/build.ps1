@@ -4,6 +4,8 @@ $projectDir = Split-Path $PSScriptRoot -Parent
 $packageDir = Join-Path $PSScriptRoot 'vendor/webview2'
 $releaseDir = Join-Path $projectDir 'dist/SourceNote'
 $compilerPath = Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
+$appVersion = (Get-Content (Join-Path $projectDir 'package.json') -Raw | ConvertFrom-Json).version
+if ($appVersion -notmatch '^\d+\.\d+\.\d+$') { throw 'A three-part numeric app version is required.' }
 if (!(Test-Path "$packageDir/lib/net462/Microsoft.Web.WebView2.Core.dll")) {
     New-Item -ItemType Directory -Force -Path "$PSScriptRoot/vendor" | Out-Null
     Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/microsoft.web.webview2/1.0.4258.31/microsoft.web.webview2.1.0.4258.31.nupkg' -OutFile "$PSScriptRoot/vendor/webview2.zip"
@@ -41,7 +43,9 @@ $bitmap.Dispose()
 
 $sourcePath = Join-Path $desktopDir 'Program.cs'
 $manifestPath = Join-Path $desktopDir 'app.manifest'
-& $compilerPath /nologo /target:winexe /platform:x64 /optimize+ "/out:$releaseDir/SourceNote.exe" "/win32icon:$iconPath" "/win32manifest:$manifestPath" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll "/reference:$releaseDir/Microsoft.Web.WebView2.Core.dll" "/reference:$releaseDir/Microsoft.Web.WebView2.WinForms.dll" $sourcePath
+$versionSource = Join-Path $releaseDir 'AssemblyInfo.cs'
+"[assembly: System.Reflection.AssemblyVersion(`"$appVersion.0`")]`n[assembly: System.Reflection.AssemblyFileVersion(`"$appVersion.0`")]" | Set-Content $versionSource
+& $compilerPath /nologo /target:winexe /platform:x64 /optimize+ "/out:$releaseDir/SourceNote.exe" "/win32icon:$iconPath" "/win32manifest:$manifestPath" /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:System.Web.Extensions.dll /reference:System.Net.Http.dll "/reference:$releaseDir/Microsoft.Web.WebView2.Core.dll" "/reference:$releaseDir/Microsoft.Web.WebView2.WinForms.dll" $sourcePath (Join-Path $desktopDir 'Updates.cs') $versionSource
 if ($LASTEXITCODE -ne 0) { throw 'Windows app compilation failed.' }
 @'
 SourceNote for Windows

@@ -25,6 +25,7 @@ internal static class Smoke
                 await RunScript(form, @"
                     if (document.querySelector('#board').children.length < 4) throw Error('App did not render');
                     if (document.querySelector('#import').hidden) throw Error('Desktop import is unavailable');
+                    if (!document.querySelector('#check-updates') || document.querySelector('#check-updates').hidden) throw Error('Desktop update control is unavailable');
                     const toggle = document.querySelector('#theme-toggle');
                     if (!toggle) throw Error('Theme toggle is unavailable');
                     if (document.documentElement.dataset.theme === 'dark') toggle.click();
@@ -64,6 +65,14 @@ internal static class Smoke
                     document.querySelector('#theme-toggle').click();
                     if (document.documentElement.dataset.theme !== 'light') throw Error('Light mode could not be restored');
                 ");
+                form.View.CoreWebView2.PostWebMessageAsJson("{\"type\":\"update\",\"version\":\"1.2.0\"}");
+                await RunScript(form, @"
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                    if (document.querySelector('#update-notice').hidden || !document.querySelector('#update-message').textContent.includes('1.2.0')) throw Error('Update notification was not shown');
+                    document.querySelector('#dismiss-update').click();
+                    if (!document.querySelector('#update-notice').hidden) throw Error('Update notification could not be dismissed');
+                    if (!document.querySelector('#app-version').textContent.startsWith('v')) throw Error('Installed version is unavailable');
+                ");
                 string previous = Json.Deserialize<string>(await form.View.CoreWebView2.ExecuteScriptAsync("localStorage.getItem('sourcenote.v1')"));
                 string backup = Path.Combine(output, "import.json");
                 File.WriteAllText(backup, "{\"version\":1,\"notes\":[{\"id\":\"import-test\",\"date\":null,\"title\":\"Imported notes\",\"body\":\"Local Windows app\",\"color\":\"green\",\"kind\":\"note\",\"items\":[]}]}");
@@ -80,7 +89,7 @@ internal static class Smoke
                 if (backups.Length == 0 || File.ReadAllText(backups[backups.Length - 1]) != previous) throw new Exception("Previous notes were not backed up");
                 await RunScript(form, "document.querySelector('#theme-toggle').click();");
                 using (var image = File.Create(Path.Combine(output, "dark-preview.png"))) await form.View.CoreWebView2.CapturePreviewAsync(CoreWebView2CapturePreviewImageFormat.Png, image);
-                File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: Native Windows startup, offline UI, scheduled tasks, completion sync, storage, backup import, and persistent dark/light mode.");
+                File.WriteAllText(Path.Combine(output, "result.txt"), "PASS: Native Windows startup, scheduling, storage, backup import, dark/light mode, and update notification without changing notes.");
                 Environment.ExitCode = 0;
             }
             catch (Exception error)

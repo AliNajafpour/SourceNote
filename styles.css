@@ -31,6 +31,8 @@ svg { width: 19px; height: 19px; flex-shrink: 0; display: block; fill: none; str
 .day-today-dot { background: #35432a; }
 .sidebar-bottom { margin-top: auto; padding: 16px 12px; border-top: 1px solid var(--line); display: flex; gap: 8px; align-items: center; font-size: 11px; color: #737a69; }
 .sidebar-bottom .icon-button { margin-left: auto; width: 25px; }
+.update-notice { display: flex; align-items: center; gap: 12px; padding: 12px 38px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.update-notice .button { margin-left: auto; }
 .local-dot { width: 5px; height: 5px; border-radius: 50%; background: #9aa87b; flex-shrink: 0; }
 main { min-width: 0; }
 .topbar { height: 84px; border-bottom: 1px solid var(--line); padding: 0 38px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
